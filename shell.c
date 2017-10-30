@@ -21,8 +21,8 @@ int flg_bg; /* bgプロセスのフラグ */
  */
 void argdiv(char *arg[],char *str)
 {
-  int i,j;
-
+  int i,j=0;
+  arg[0]=str;
   for(i=0;str[i]!='\0';i++)
     {
       if(str[i]==' ') /* 空白を見つけたとき */
@@ -44,10 +44,11 @@ void argdiv(char *arg[],char *str)
  */
 void wait_input(char *arg[])
 {
-  char str[BUFS];
+  static char str[BUFS];
   /* プロンプトを表示して入力を受け取る */
   printf("$ ");
   fgets(str,BUFS,stdin);
+
   str[strlen(str)-1]='\0'; /* 改行を消去 */
 
   argdiv(arg,str);
@@ -100,6 +101,7 @@ int main(int argc,char *argv[],char *envp[])
       exit_shell(arg[0],arg,envp);
 
       pid=fork();
+
       switch(pid)
 	{
 	case -1:perror("folk"); continue; /* folkに失敗した場合 */
