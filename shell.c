@@ -1,3 +1,15 @@
+/**
+ * @file shell.c
+ *
+ * Copyright(c) 2017 藤田朱門
+ *
+ * This software is released under the MIT License.
+ * http;//opensource.org/licenses/MIT
+ *
+ * @brief 自作シェル
+ * @author 藤田朱門
+ * @date 2017/11/6
+ */
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -6,15 +18,19 @@
 #include<sys/wait.h>
 #include<err.h>
 
-#define BUFS (1024)
-#define ARGS (1024)
+#define true (1)
+#define false (0)
 
-int flg_bg; /* bgプロセスのフラグ */
+#define BUFS (1024)		/* 入力できるコマンドの最大の文字数 */
+#define ARGS (1024)		/* 許容する最大の引数の数 */
+#define PRCS (1024)		/* 同時に実行できる最大のプロセス数 */
+
+int flg_bg;			/* bgプロセスのフラグ */
 
 /**
  * @brief 受け取った文字列を走査して引数に分割
  *
- * 引数の分割時にbgプロセスのフラグ処理も同時に行う
+ * 引数の分割時にBGプロセスのフラグ処理も同時に行う
  *
  * @param[in,out] arg 分割された引数の配列
  * @param[in,out] str 分割前の文字列
@@ -25,14 +41,14 @@ void argdiv(char *arg[],char *str)
   arg[0]=str;
   for(i=0;str[i]!='\0';i++)
     {
-      if(str[i]==' ') /* 空白を見つけたとき */
+      if(str[i]==' ')		/* 空白を見つけたとき */
 	{
-	  str[i]='\0'; /* 文字列を分割 */
+	  str[i]='\0';		/* 文字列を分割 */
 	  while(str[++i]==' '); /* 連続する空白を読み飛ばす */
-	  if(str[i]=='&')
-	    flg_bg=1;
+	  if(str[i]=='&')	/* BGプロセスとして起動する場合 */
+	    flg_bg=true;
 	  else
-	    arg[++j]=&str[i]; /* 次の要素に代入 */
+	    arg[++j]=&str[i];	/* 次の引数に代入 */
 	}
     }
 }
@@ -49,7 +65,7 @@ void wait_input(char *arg[])
   printf("$ ");
   fgets(str,BUFS,stdin);
 
-  str[strlen(str)-1]='\0'; /* 改行を消去 */
+  str[strlen(str)-1]='\0';	/* 改行を消去 */
 
   argdiv(arg,str);
 }
@@ -75,19 +91,33 @@ void exit_shell(char *cmd,char *arg[],char *envp[])
  */
 void child(char *cmd,char *arg[],char *envp[])
 {
-  execve(cmd,arg,envp); /* コマンドを実行 */
+  execve(cmd,arg,envp);		/* コマンドを実行 */
   exit(0);
 }
 
 /**
  * @brief 親プロセスでの挙動
  *
+ * @param[in] pid 生成した子プロセスのプロセスID
  */
-void parent()
+void parent(pid_t pid)
 {
+  pid_t endid;
   int status;
-  if(flg_bg==0)
-    wait(&status);
+  if(flg_bg==false)		/* FGプロセスの場合 */
+    {
+      wait(&status);
+    }
+  else
+    {
+      endid=waitpid(0,&status,WNOHANG);
+      switch(endid)		/* どのプロセスが終了したか確認 */
+	{
+	case 0:break;
+	case -1:perror("waitpid");break;
+	default:fprintf(stderr,"[%d] terminated\n",endid); break;
+	}
+    }
 }
 
 int main(int argc,char *argv[],char *envp[])
@@ -96,6 +126,7 @@ int main(int argc,char *argv[],char *envp[])
   while(1)
     {
       char *arg[ARGS]={};
+      flg_bg=false;
 
       wait_input(arg);
       exit_shell(arg[0],arg,envp);
@@ -104,9 +135,9 @@ int main(int argc,char *argv[],char *envp[])
 
       switch(pid)
 	{
-	case -1:perror("folk"); continue; /* folkに失敗した場合 */
+	case -1:perror("folk"); continue;     /* folkに失敗した場合 */
 	case 0:child(arg[0],arg,envp); break; /* 子プロセス */
-	default:parent(); break; /* 親プロセス */
+	default:parent(pid); break;	      /* 親プロセス */
 	}
     }
 
