@@ -25,7 +25,9 @@
 #define ARGS (1024)		/* 許容する最大の引数の数 */
 #define PRCS (1024)		/* 同時に実行できる最大のプロセス数 */
 
-int flg_bg;			/* bgプロセスのフラグ */
+int flg_bg;			/* BGプロセスのフラグ */
+int prcs[PRCS];			/* 実行中のプロセスのPIDリスト */
+int prcn=0;			/* 実行中のプロセスの数 */
 
 /**
  * @brief 受け取った文字列を走査して引数に分割
@@ -83,6 +85,21 @@ void exit_shell(char *cmd,char *arg[],char *envp[])
 }
 
 /**
+ * @brief BG実行中の子プロセスが終了したときの処理
+ *
+ * @param[in] endid 終了した子プロセスのPID
+ */
+void bg_end(pid_t endid)
+{
+  int i,j;
+  for(i=j=0;i<prcn;i++)		/* 終了したPIDをもつプロセスを探す */
+    if(prcs[i]!=endid)
+      prcs[j++]=prcs[i];	/* 終了したPIDを消して1つシフト */
+  prcn--;			/* 実行中のバッググラウンドの数を減らす */
+  fprintf(stderr,"[%d] terminated\n",endid);
+}
+
+/**
  * @brief 子プロセスでの挙動
  *
  * @param[in] cmd コマンド
@@ -104,19 +121,25 @@ void parent(pid_t pid)
 {
   pid_t endid;
   int status;
+
+  prcs[prcn++]=pid;		/* 実行中のプロセス数を増やしてPIDを登録 */
+
+  for(int i=0;i<prcn;i++)printf("%d\n",prcs[i]); // debug
+  
   if(flg_bg==false)		/* FGプロセスの場合 */
     {
       wait(&status);
+      prcn--;			/* 実行中のプロセス数を減らす */
     }
-  else
+
+  endid=waitpid(-1,&status,WNOHANG);
+  printf("endid = %d\n",endid); // debug
+
+  switch(endid)		/* どのプロセスが終了したか確認 */
     {
-      endid=waitpid(0,&status,WNOHANG);
-      switch(endid)		/* どのプロセスが終了したか確認 */
-	{
-	case 0:break;
-	case -1:perror("waitpid");break;
-	default:fprintf(stderr,"[%d] terminated\n",endid); break;
-	}
+    case 0:break;
+    case -1:perror("waitpid");break;
+    default:bg_end(endid); break;
     }
 }
 
@@ -137,7 +160,7 @@ int main(int argc,char *argv[],char *envp[])
 	{
 	case -1:perror("folk"); continue;     /* folkに失敗した場合 */
 	case 0:child(arg[0],arg,envp); break; /* 子プロセス */
-	default:parent(pid); break;	      /* 親プロセス */
+	default:parent(pid); break;    /* 親プロセス */
 	}
     }
 
