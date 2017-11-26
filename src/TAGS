@@ -1,0 +1,33 @@
+
+builtin.c,74
+void builtin_exit(26,531
+void builtin_quit(39,843
+void builtin(52,1146
+
+main.c,17
+int main(22,354
+
+shell.c,187
+static int flg_bg;25,427
+static prc prcs[prcs26,480
+static int prcn=27,550
+void argdiv(37,859
+void wait_input(61,1464
+void bg_end(82,1924
+void child(99,2390
+void parent(111,2682
+
+../inc/bool.h,43
+#define true 14,243
+#define false 15,260
+
+../inc/builtin.h,59
+#define BUILTIN_H_14,266
+#define BUILTIN_COMMANDS 16,286
+
+../inc/shell.h,107
+#define BUFS 14,260
+#define ARGS 15,336
+#define PRCS 16,397
+typedef struct Prc	18,474
+}prc;prc22,617

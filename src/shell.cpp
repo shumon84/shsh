@@ -6,7 +6,7 @@
  * This software is released under the MIT License.
  * http;//opensource.org/licenses/MIT
  *
- * @brief 自作シェル
+ * @brief シェルの内部処理
  * @author 藤田朱門
  * @date 2017/11/6
  */
@@ -18,16 +18,13 @@
 #include<sys/wait.h>
 #include<err.h>
 
-#define true (1)
-#define false (0)
+#include<bool.h>
+#include<shell.h>
+#include<builtin.h>
 
-#define BUFS (1024)		/* 入力できるコマンドの最大の文字数 */
-#define ARGS (1024)		/* 許容する最大の引数の数 */
-#define PRCS (1024)		/* 同時に実行できる最大のプロセス数 */
-
-int flg_bg;			/* BGプロセスのフラグ */
-int prcs[PRCS];			/* 実行中のプロセスのPIDリスト */
-int prcn=0;			/* 実行中のプロセスの数 */
+static int flg_bg;		/* BGプロセスのフラグ */
+static prc prcs[PRCS];		/* 実行中のプロセスのPIDリスト */
+static int prcn=0;		/* 実行中のプロセスの数 */
 
 /**
  * @brief 受け取った文字列を走査して引数に分割
@@ -40,7 +37,8 @@ int prcn=0;			/* 実行中のプロセスの数 */
 void argdiv(char *arg[],char *str)
 {
   int i,j=0;
-  arg[0]=str;
+  flg_bg=false;			/* フラグの初期化 */
+  arg[0]=str;			/* 第一引数をセット */
   for(i=0;str[i]!='\0';i++)
     {
       if(str[i]==' ')		/* 空白を見つけたとき */
@@ -63,25 +61,17 @@ void argdiv(char *arg[],char *str)
 void wait_input(char *arg[])
 {
   static char str[BUFS];
+  int i;
+  for(i=0;i<BUFS;i++)
+    str[i]='\0';
+  
   /* プロンプトを表示して入力を受け取る */
   printf("$ ");
   fgets(str,BUFS,stdin);
 
   str[strlen(str)-1]='\0';	/* 改行を消去 */
 
-  argdiv(arg,str);
-}
-
-/**
- * @brief シェルを終了させるビルトインコマンド
- *
- * @param[in] cmd 入力されたコマンド
- */
-void exit_shell(char *cmd,char *arg[],char *envp[])
-{
-  /* 終了コマンド */
-  if(strcmp(cmd,"exit")==0 || strcmp(cmd,"quit")==0)
-    exit(0);      
+  argdiv(arg,str);		/* コマンドを引数ごとに分割 */
 }
 
 /**
@@ -93,9 +83,9 @@ void bg_end(pid_t endid)
 {
   int i,j;
   for(i=j=0;i<prcn;i++)		/* 終了したPIDをもつプロセスを探す */
-    if(prcs[i]!=endid)
+    if(prcs[i].pid!=endid)
       prcs[j++]=prcs[i];	/* 終了したPIDを消して1つシフト */
-  prcn--;			/* 実行中のバッググラウンドの数を減らす */
+  prcn--;			/* 実行中のプロセスの数を減らす */
   fprintf(stderr,"[%d] terminated\n",endid);
 }
 
@@ -116,53 +106,34 @@ void child(char *cmd,char *arg[],char *envp[])
  * @brief 親プロセスでの挙動
  *
  * @param[in] pid 生成した子プロセスのプロセスID
+ * @param[in] cmd 生成した子プロセスのプロセス名
  */
-void parent(pid_t pid)
+void parent(pid_t pid,char *cmd)
 {
   pid_t endid;
   int status;
 
-  prcs[prcn++]=pid;		/* 実行中のプロセス数を増やしてPIDを登録 */
-
-  for(int i=0;i<prcn;i++)printf("%d\n",prcs[i]); // debug
-  
   if(flg_bg==false)		/* FGプロセスの場合 */
     {
       wait(&status);
-      prcn--;			/* 実行中のプロセス数を減らす */
+    }
+  else
+    {
+      int i;
+      for(i=0;cmd[i]=='\0';i++)	/* プロセス名を登録 */
+	prcs[prcn].name[i]=cmd[i];
+      prcs[prcn].pid=pid;	/* PIDを登録 */
+      prcn++;
     }
 
+  for(int i=0;i<prcn;i++)printf("[%d] %s\n",prcs[i].pid,prcs[i].name); // debug
   endid=waitpid(-1,&status,WNOHANG);
   printf("endid = %d\n",endid); // debug
 
-  switch(endid)		/* どのプロセスが終了したか確認 */
+  switch(endid)			/* どのプロセスが終了したか確認 */
     {
-    case 0:break;
+    case 0:break;		/* どのプロセスも終了していない場合 */
     case -1:perror("waitpid");break;
-    default:bg_end(endid); break;
+    default:bg_end(endid); break; /* プロセスが終了した場合 */
     }
-}
-
-int main(int argc,char *argv[],char *envp[])
-{
-  pid_t pid;
-  while(1)
-    {
-      char *arg[ARGS]={};
-      flg_bg=false;
-
-      wait_input(arg);
-      exit_shell(arg[0],arg,envp);
-
-      pid=fork();
-
-      switch(pid)
-	{
-	case -1:perror("folk"); continue;     /* folkに失敗した場合 */
-	case 0:child(arg[0],arg,envp); break; /* 子プロセス */
-	default:parent(pid); break;    /* 親プロセス */
-	}
-    }
-
-  return 0;
 }
