@@ -1,28 +1,0 @@
-
-builtin.cpp,74
-bool builtin_exit(25,530
-bool builtin_quit(40,861
-void builtin(55,1189
-
-main.cpp,17
-int main(21,337
-
-shell.cpp,192
-static bool flg_bg;25,430
-static process prcs[prcs26,484
-static int prcn=27,562
-void argdiv(37,871
-void wait_input(61,1476
-void bg_end(82,1936
-void child(99,2402
-void parent(111,2661
-
-../inc/builtin.h,26
-#define BUILTIN_H_14,266
-
-../inc/shell.h,119
-#define BUFS 14,260
-#define ARGS 15,336
-#define PRCS 16,397
-typedef struct Process	18,474
-}process;process22,621

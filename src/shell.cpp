@@ -22,9 +22,9 @@
 #include<shell.h>
 #include<builtin.h>
 
-static bool flg_bg;		/* BGプロセスのフラグ */
-static process prcs[PRCS];     	/* 実行中のプロセスのPIDリスト */
-static int prcn=0;		/* 実行中のプロセスの数 */
+bool flg_bg;		/* BGプロセスのフラグ */
+process prcs[PRCS];     /* 実行中のプロセスのPIDリスト */
+int prcn=0;		/* 実行中のプロセスの数 */
 
 /**
  * @brief 受け取った文字列を走査して引数に分割
@@ -113,8 +113,6 @@ void parent(pid_t pid,char *cmd)
   pid_t endid;
   int status;
 
-  printf("cmd = %s\n",cmd); // debug
-
   if(flg_bg==false)		/* FGプロセスの場合 */
     {
       waitpid(pid,&status,0);
@@ -124,13 +122,14 @@ void parent(pid_t pid,char *cmd)
       int i;
       for(i=0;cmd[i]!='\0';i++)	/* プロセス名を登録 */
 	prcs[prcn].name[i]=cmd[i];
+      prcs[prcn].name[i]='\0';	/* 以前登録されたプロセス名との干渉を防ぐ */
       prcs[prcn].pid=pid;	/* PIDを登録 */
       prcn++;
     }
 
-  for(int i=0;i<prcn;i++)printf("debug [%d] = %s\n",prcs[i].pid,prcs[i].name); // debug
+  //  for(int i=0;i<prcn;i++)printf("debug [%d] = %s\n",prcs[i].pid,prcs[i].name); // debug
   endid=waitpid(-1,&status,WNOHANG);
-  printf("debug endid = %d\n",endid); // debug
+  //printf("debug endid = %d\n",endid); // debug
 
   switch(endid)			/* どのプロセスが終了したか確認 */
     {

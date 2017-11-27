@@ -35,9 +35,7 @@ int main(int argc,char *argv[],char *envp[])
 	{
 	case -1:perror("folk"); continue;     /* folkに失敗した場合 */
 	case 0:child(arg[0],arg,envp); break; /* 子プロセス */
-	default:
-	  printf("子プロセスのPID = %d\n",pid); // debug
-	  parent(pid,arg[0]); break;    /* 親プロセス */
+	default:parent(pid,arg[0]); break;    /* 親プロセス */
 	}
     }
 
