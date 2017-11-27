@@ -17,7 +17,6 @@
 
 #include<shell.h>
 #include<builtin.h>
-#include<bool.h>
 
 int main(int argc,char *argv[],char *envp[])
 {
@@ -28,22 +27,17 @@ int main(int argc,char *argv[],char *envp[])
       char *arg[ARGS]={};
 
       wait_input(arg);		/* 入力を受け取る */
-
-      puts("wait_input終わり"); // debug
-      
       builtin(arg[0],arg,envp); /*ビルトインコマンドの実行 */
 
-      puts("builtin終わり\n"); // debug
-
       pid=fork();		/* プロセスをフォーク */
-
-      puts("fork終わり\n"); // debug
 
       switch(pid)
 	{
 	case -1:perror("folk"); continue;     /* folkに失敗した場合 */
 	case 0:child(arg[0],arg,envp); break; /* 子プロセス */
-	default:parent(pid,arg[0]); break;    /* 親プロセス */
+	default:
+	  printf("子プロセスのPID = %d\n",pid); // debug
+	  parent(pid,arg[0]); break;    /* 親プロセス */
 	}
     }
 

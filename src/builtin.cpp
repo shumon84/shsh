@@ -13,8 +13,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-
-#include<builtin.h>
+#include<stdbool.h>
 
 /**
  * @brief シェルを終了させる組み込みコマンド
@@ -23,10 +22,12 @@
  * @param[in] arg 入力されたコマンドの引数
  * @param[in] envp 環境変数
  */
-void builtin_exit(char *cmd,char *arg[],char *envp[])
+bool builtin_exit(char *cmd,char *arg[],char *envp[])
 {
   if(strcmp(cmd,"exit")==0)
-    exit(0);      
+    exit(0);
+  else
+    return false;
 }
 
 /**
@@ -36,10 +37,12 @@ void builtin_exit(char *cmd,char *arg[],char *envp[])
  * @param[in] arg 入力されたコマンドの引数
  * @param[in] envp 環境変数
  */
-void builtin_quit(char *cmd,char *arg[],char *envp[])
+bool builtin_quit(char *cmd,char *arg[],char *envp[])
 {
   if(strcmp(cmd,"quit")==0)
     exit(0);
+  else
+    return false;
 }
 
 /**
@@ -51,14 +54,15 @@ void builtin_quit(char *cmd,char *arg[],char *envp[])
  */
 void builtin(char *cmd,char *arg[],char *envp[])
 {
-  static void (*builtin_command[])(char*,char*[],char*[])=
+  static bool (*builtin_command[])(char*,char*[],char*[])=
     {
       builtin_exit,
       builtin_quit,
-    };				/* 組み込みコマンドの一覧を作る */
+    }; /* 組み込みコマンドの一覧 */
 
   int i;
-  int n=sizeof(builtin_command)/sizeof(void *(char*,char*[],char*[]));
-  for(i=0;i<n;i++) /*  */
-    builtin_command[i](cmd,arg,envp);
+  int n=sizeof(builtin_command)/sizeof(builtin_command[0]);
+  for(i=0;i<n;i++) /* 全ての組み込みコマンドで実行できるか試す */
+    if(builtin_command[i](cmd,arg,envp))
+      break;
 }

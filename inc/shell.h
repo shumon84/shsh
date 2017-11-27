@@ -15,11 +15,11 @@
 #define ARGS (1024)		/* 許容する最大の引数の数 */
 #define PRCS (1024)		/* 同時に実行できる最大のプロセス数 */
 
-typedef struct Prc		/* プロセス情報を持つ構造体 */
+typedef struct Process		/* プロセス情報を持つ構造体 */
 {
   pid_t pid;			/* プロセスID */
   char name[BUFS];		/* プロセス名 */
-}prc;
+}process;
 
 void argdiv(char *arg[],char *str);
 void wait_input(char *arg[]);

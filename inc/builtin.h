@@ -13,8 +13,6 @@
 #ifndef BUILTIN_H_
 #define BUILTIN_H_
 
-#define BUILTIN_COMMANDS (2)
-
 void builtin_exit(char *cmd,char *arg[],char *envp[]);
 void builtin_quit(char *cmd,char *arg[],char *envp[]);
 void builtin(char *cmd,char *arg[],char *envp[]);

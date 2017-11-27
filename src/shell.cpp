@@ -12,18 +12,18 @@
  */
 #include<stdio.h>
 #include<stdlib.h>
+#include<stdbool.h>
 #include<string.h>
 #include<unistd.h>
 #include<sys/types.h>
 #include<sys/wait.h>
 #include<err.h>
 
-#include<bool.h>
 #include<shell.h>
 #include<builtin.h>
 
-static int flg_bg;		/* BGプロセスのフラグ */
-static prc prcs[PRCS];		/* 実行中のプロセスのPIDリスト */
+static bool flg_bg;		/* BGプロセスのフラグ */
+static process prcs[PRCS];     	/* 実行中のプロセスのPIDリスト */
 static int prcn=0;		/* 実行中のプロセスの数 */
 
 /**
@@ -106,34 +106,36 @@ void child(char *cmd,char *arg[],char *envp[])
  * @brief 親プロセスでの挙動
  *
  * @param[in] pid 生成した子プロセスのプロセスID
- * @param[in] cmd 生成した子プロセスのプロセス名
+ * @param[in] cmd コマンド
  */
 void parent(pid_t pid,char *cmd)
 {
   pid_t endid;
   int status;
 
+  printf("cmd = %s\n",cmd); // debug
+
   if(flg_bg==false)		/* FGプロセスの場合 */
     {
-      wait(&status);
+      waitpid(pid,&status,0);
     }
   else
     {
       int i;
-      for(i=0;cmd[i]=='\0';i++)	/* プロセス名を登録 */
+      for(i=0;cmd[i]!='\0';i++)	/* プロセス名を登録 */
 	prcs[prcn].name[i]=cmd[i];
       prcs[prcn].pid=pid;	/* PIDを登録 */
       prcn++;
     }
 
-  for(int i=0;i<prcn;i++)printf("[%d] %s\n",prcs[i].pid,prcs[i].name); // debug
+  for(int i=0;i<prcn;i++)printf("debug [%d] = %s\n",prcs[i].pid,prcs[i].name); // debug
   endid=waitpid(-1,&status,WNOHANG);
-  printf("endid = %d\n",endid); // debug
+  printf("debug endid = %d\n",endid); // debug
 
   switch(endid)			/* どのプロセスが終了したか確認 */
     {
     case 0:break;		/* どのプロセスも終了していない場合 */
-    case -1:perror("waitpid");break;
+    case -1:break;
     default:bg_end(endid); break; /* プロセスが終了した場合 */
     }
 }
