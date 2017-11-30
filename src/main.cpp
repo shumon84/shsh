@@ -25,9 +25,11 @@ int main(int argc,char *argv[],char *envp[])
   while(1)
     {
       char *arg[ARGS]={};
+      int argnum;
 
-      wait_input(arg);		/* 入力を受け取る */
-      builtin(arg[0],arg,envp); /*ビルトインコマンドの実行 */
+      argnum=wait_input(arg);		/* 入力を受け取る */
+
+      builtin(argnum,arg,envp); /*ビルトインコマンドの実行 */
 
       pid=fork();		/* プロセスをフォーク */
 

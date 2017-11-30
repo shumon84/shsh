@@ -15,8 +15,8 @@
 
 #include<stdbool.h>
 
-bool builtin_exit(char *cmd,char *arg[],char *envp[]);
-bool builtin_quit(char *cmd,char *arg[],char *envp[]);
-bool builtin_jobs(char *cmd,char *arg[],char *envp[]);
-void builtin(char *cmd,char *arg[],char *envp[]);
+bool builtin_exit(int argnum,char *arg[],char *envp[]);
+bool builtin_quit(int argnum,char *arg[],char *envp[]);
+bool builtin_jobs(int argnum,char *arg[],char *envp[]);
+void builtin(int argnum,char *arg[],char *envp[]);
 #endif

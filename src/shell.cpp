@@ -33,12 +33,13 @@ int prcn=0;		/* 実行中のプロセスの数 */
  *
  * @param[in,out] arg 分割された引数の配列
  * @param[in,out] str 分割前の文字列
+ * @param[out] argnum 分割された引数の配列の要素数
  */
-void argdiv(char *arg[],char *str)
+int argdiv(char *arg[],char *str)
 {
-  int i,j=0;
+  int i,argnum=0;
   flg_bg=false;			/* フラグの初期化 */
-  arg[0]=str;			/* 第一引数をセット */
+  arg[argnum++]=str;		/* 第一引数をセット */
   for(i=0;str[i]!='\0';i++)
     {
       if(str[i]==' ')		/* 空白を見つけたとき */
@@ -48,19 +49,22 @@ void argdiv(char *arg[],char *str)
 	  if(str[i]=='&')	/* BGプロセスとして起動する場合 */
 	    flg_bg=true;
 	  else
-	    arg[++j]=&str[i];	/* 次の引数に代入 */
+	    arg[argnum++]=&str[i];	/* 次の引数に代入 */
 	}
     }
+  return argnum;
 }
 
 /**
  * @brief コマンドの入力を待つ
  *
  * @param[in,out] arg 入力されたコマンド
+ * @param[out] argnum コマンドの引数の数
  */
-void wait_input(char *arg[])
+int  wait_input(char *arg[])
 {
   static char str[BUFS];
+  int argnum;
   int i;
   for(i=0;i<BUFS;i++)
     str[i]='\0';
@@ -71,7 +75,9 @@ void wait_input(char *arg[])
 
   str[strlen(str)-1]='\0';	/* 改行を消去 */
 
-  argdiv(arg,str);		/* コマンドを引数ごとに分割 */
+  argnum=argdiv(arg,str);	/* コマンドを引数ごとに分割 */
+
+  return argnum;
 }
 
 /**
