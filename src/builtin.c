@@ -94,7 +94,7 @@ bool builtin_fg(int argnum,char *arg[],char *envp[])
       if(argnum!=2)		/* 引数が少ない、または多すぎる場合 */
       	{
       	  errno=EINVAL;		/* errnoを設定 */
-	  perror("fg");
+	  perror("fg");		/* エラーメッセージを出力 */
       	}
       else
       	{

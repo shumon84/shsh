@@ -25,6 +25,7 @@
 bool flg_bg;		/* BGプロセスのフラグ */
 process prcs[PRCS];     /* 実行中のプロセスのPIDリスト */
 int prcn=0;		/* 実行中のプロセスの数 */
+pid_t fg_pid;		/* 実行中のFGプロセスのPID */
 
 /**
  * @brief 受け取った文字列を走査して引数に分割
@@ -61,7 +62,7 @@ int argdiv(char *arg[],char *str)
  * @param[in,out] arg 入力されたコマンド
  * @param[out] argnum コマンドの引数の数
  */
-int  wait_input(char *arg[])
+int wait_input(char *arg[])
 {
   static char str[BUFS];
   int argnum;
@@ -87,12 +88,16 @@ int  wait_input(char *arg[])
  */
 void bg_end(pid_t endid)
 {
+  if(endid<=0)
+    return;
+  
   int i,j;
   for(i=j=0;i<prcn;i++)		/* 終了したPIDをもつプロセスを探す */
     if(prcs[i].pid!=endid)
       prcs[j++]=prcs[i];	/* 終了したPIDを消して1つシフト */
+    else
+      fprintf(stderr,"[%d] Done\t%s\n",prcs[i].pid,prcs[i].name);      
   prcn--;			/* 実行中のプロセスの数を減らす */
-  fprintf(stderr,"[%d] terminated\n",endid);
 }
 
 /**
@@ -116,14 +121,15 @@ void child(char *cmd,char *arg[],char *envp[])
  */
 void parent(pid_t pid,char *cmd)
 {
-  pid_t endid;
   int status;
 
   if(flg_bg==false)		/* FGプロセスの場合 */
     {
+      fg_pid=pid;
       waitpid(pid,&status,0);
+      fg_pid=-1;
     }
-  else
+  else				/* BGプロセスの場合 */
     {
       int i;
       for(i=0;cmd[i]!='\0';i++)	/* プロセス名を登録 */
@@ -133,14 +139,5 @@ void parent(pid_t pid,char *cmd)
       prcn++;
     }
 
-  //  for(int i=0;i<prcn;i++)printf("debug [%d] = %s\n",prcs[i].pid,prcs[i].name); // debug
-  endid=waitpid(-1,&status,WNOHANG);
-  //printf("debug endid = %d\n",endid); // debug
-
-  switch(endid)			/* どのプロセスが終了したか確認 */
-    {
-    case 0:break;		/* どのプロセスも終了していない場合 */
-    case -1:break;
-    default:bg_end(endid); break; /* プロセスが終了した場合 */
-    }
+  bg_end(waitpid(-1,&status,WNOHANG)); /* 終了したプロセスの後処理 */
 }
