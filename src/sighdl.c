@@ -22,13 +22,13 @@
  */
 void signal_quit(int signum)
 {
-  extern pid_t fg_pid;
-  if(fg_pid!=-1)
-    kill(fg_pid,SIGINT);
+  extern pid_t fg_pid;		/* 実行中のFGプロセスのPID */
+  if(fg_pid!=-1)		/* 実行中のFGプロセスがあるか確認 */
+    kill(fg_pid,SIGINT);	/* 実行中のFGプロセスを終了させる */
 }
 
 /**
- * @brief プロセスの終了ステータスを得るシグナルハンドラ
+ * @brief 終了したプロセスの後処理をするシグナルハンドラ
  *
  * SIGCHLDの処理
  */
@@ -37,7 +37,7 @@ void signal_quit(int signum)
 void signal_status(int signum)
 {
   int status;
-  bg_end(waitpid(-1,&status,WNOHANG));
+  bg_end(waitpid(-1,&status,WNOHANG)); /* 終了したプロセスの後処理 */
 }
 
 /**
@@ -55,9 +55,8 @@ void signal_set()
     {
       {SIGINT,signal_quit},
       {SIGCHLD,signal_status},
-    }; /* シグナルハンドラとシグナルの対応テーブル */
+    }; /* シグナルとシグナルハンドラの対応テーブル */
   int hdl_num=sizeof(handler)/sizeof(sighdl);
-  printf("hdl_num=%d\n",hdl_num);
   for(i=0;i<hdl_num;i++)
     if(signal(handler[i].signum,handler[i].hdl)==SIG_ERR)
       exit(-1);

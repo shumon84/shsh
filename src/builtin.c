@@ -100,12 +100,9 @@ bool builtin_fg(int argnum,char *arg[],char *envp[])
       	{
 	  extern process prcs[PRCS];
 	  extern int prcn;
-	  int status;
-	  pid_t pid=atoi(arg[1]); /* 引数からFGにするPIDを抽出 */
-	  if(waitpid(pid,&status,0)!=-1)
-	    bg_end(pid);	/* 正常にプロセスが終了した場合 */
-	  else
-	    perror("fg");	/* 指定されたpidがなかった場合 */
+	  extern pid_t fg_pid;
+	  fg_pid=atoi(arg[1]);	/* 引数からFGにするPIDを抽出 */
+	  fg_pid=-1;
 	  }
       return true;
     }

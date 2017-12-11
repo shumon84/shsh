@@ -23,12 +23,14 @@
 int main(int argc,char *argv[],char *envp[])
 {
   signal_set();			/* シグナルハンドラの設定 */
-  
+  extern pid_t fg_pid;
   while(1)
     {
       char *arg[ARGS]={};	/* 引数配列 */
       int argnum;		/* 引数の数 */
       pid_t pid;		/* folkした子プロセスのPID */
+
+      fg_pid=-1;		/* FGプロセスがないので、-1を設定 */
 
       argnum=wait_input(arg);	/* 入力を受け取る */
       builtin(argnum,arg,envp); /* ビルトインコマンドの実行 */

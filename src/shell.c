@@ -138,6 +138,4 @@ void parent(pid_t pid,char *cmd)
       prcs[prcn].pid=pid;	/* PIDを登録 */
       prcn++;
     }
-
-  bg_end(waitpid(-1,&status,WNOHANG)); /* 終了したプロセスの後処理 */
 }
