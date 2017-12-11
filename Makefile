@@ -1,5 +1,5 @@
 PROGRAM  = $(shell basename $(CURDIR))
-SRC_EXT  = cpp
+SRC_EXT  = c
 INC_EXT  = h
 CC       = gcc
 LDFLAGS  =
@@ -8,7 +8,7 @@ SRC_DIR  = src
 OBJ_DIR  = obj
 INC_DIR  = inc
 TMP_DIR  = tmp
-RM       = rm -rv
+RM       = rm -rfv
 
 SRCS     = $(wildcard $(SRC_DIR)/*.$(SRC_EXT))
 OBJS     = $(patsubst $(SRC_DIR)/%.$(SRC_EXT),$(OBJ_DIR)/%.o,$(SRCS))
