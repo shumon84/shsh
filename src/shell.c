@@ -126,6 +126,7 @@ void parent(pid_t pid,char *cmd)
   if(flg_bg==false)		/* FGプロセスの場合 */
     {
       fg_pid=pid;
+      prcn++;
       waitpid(pid,&status,0);
       fg_pid=-1;
     }

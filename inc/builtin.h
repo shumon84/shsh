@@ -18,5 +18,6 @@
 bool builtin_exit(int argnum,char *arg[],char *envp[]);
 bool builtin_quit(int argnum,char *arg[],char *envp[]);
 bool builtin_jobs(int argnum,char *arg[],char *envp[]);
+bool builtin_fg(int argnum,char *arg[],char *envp[]);
 void builtin(int argnum,char *arg[],char *envp[]);
 #endif

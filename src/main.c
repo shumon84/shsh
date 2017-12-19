@@ -22,7 +22,6 @@
 
 int main(int argc,char *argv[],char *envp[])
 {
-  signal_set();			/* シグナルハンドラの設定 */
   extern pid_t fg_pid;
   while(1)
     {
@@ -37,7 +36,7 @@ int main(int argc,char *argv[],char *envp[])
       pid=fork();		/* プロセスをフォーク */
       switch(pid)
 	{
-	case -1:perror("folk"); break;     /* folkに失敗した場合 */
+	case -1:perror("folk"); break;	      /* folkに失敗した場合 */
 	case 0:child(arg[0],arg,envp); break; /* 子プロセス */
 	default:parent(pid,arg[0]); break;    /* 親プロセス */
 	}

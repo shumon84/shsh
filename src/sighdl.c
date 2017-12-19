@@ -48,7 +48,7 @@ typedef struct Sighdl{
   int signum;
   void (*hdl)(int);
 }sighdl;
-void signal_set()
+void signal_set() __attribute__((constructor))
 {
   int i;
   sighdl handler[]=
