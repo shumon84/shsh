@@ -20,7 +20,7 @@
  * @brief シェルを終了させる組み込みコマンド
  *
  * @param[in] argnum 入力されたコマンドの引数の数
- * @param[in] arxg    入力されたコマンドの引数
+ * @param[in] arg    入力されたコマンドの引数
  * @param[in] envp   環境変数
  * @param[out] このコマンドを実行するかどうか
  */
@@ -117,15 +117,16 @@ bool builtin_fg(int argnum,char *arg[],char *envp[])
  * @param[in] arg    入力されたコマンドの引数
  * @param[in] envp   環境変数
  */
+/* 組み込みコマンドの一覧 */
+bool (*builtin_command[])(int,char*[],char*[])=
+{
+  builtin_exit,
+  builtin_quit,
+  builtin_jobs,
+  builtin_fg,
+};
 void builtin(int argnum,char *arg[],char *envp[])
 {
-  static bool (*builtin_command[])(int,char*[],char*[])=
-    {
-      builtin_exit,
-      builtin_quit,
-      builtin_jobs,
-      builtin_fg,
-    }; /* 組み込みコマンドの一覧 */
 
   int i;
   int n=sizeof(builtin_command)/sizeof(builtin_command[0]);
