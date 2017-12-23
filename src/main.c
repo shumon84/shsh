@@ -39,7 +39,7 @@ int main(int argc,char *argv[],char *envp[])
 
       builtin(argnum,arg,envp); /* ビルトインコマンドの実行 */
 
-      if(path_search(arg[0],cmd)!=NULL)
+      if(path_search(arg[0],cmd)!=NULL) /* コマンドが存在するか検索 */
 	{      
 	  pid=fork();		/* プロセスをフォーク */
 	  switch(pid)
